@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# Name:        raspi-source
+# Description: The bash script for installing kernel source.
+# Author:      moutend <moutend@gmail.com>
+# Repository:  https://github.com/moutend/raspi-kernel.git
+# LICENSE:     MIT http://moutend.mit-license.org/)
+
+set -e
+
+FIRMWARE_REVISION=`\
+  zcat /usr/share/doc/raspberrypi-bootloader/changelog.Debian.gz |\
+  grep "  \* firmware as of" |\
+  head -n 1 |\
+  sed -e 's/  \* firmware as of //g' |\
+  tr -d '\n'`
+GIT_HASH=`\
+  curl --silent "https://raw.githubusercontent.com/raspberrypi/firmware/$FIRMWARE_REVISION/extra/git_hash" |\
+  tr -d '\n'`
+GIT_REPO="https://api.github.com/repos/raspberrypi/linux/tarball/$GIT_HASH" > /dev/null
+PI2_SOC_NAME="BCM2709"
+
+echo "Info:	REVISION=$FIRMWARE_REVISION"
+echo "Info:	GIT_HASH=$GIT_HASH"
+echo "Info:	GIT_REPO=$GIT_REPO"
+
+if [ ! -e $GIT_HASH ]
+then
+  echo "Download: $GIT_REPO"
+  wget --quiet $GIT_REPO
+else
+  echo "Info:	Already downloaded"
+fi
+
+if [ ! -e /usr/src/linux-$GIT_HASH ]
+then
+  echo "Unpack:	$GIT_HASH"
+
+  [ ! -e ./linux-$GIT_HAS ] && rm -rf ./linux-$GIT_HASH
+  mkdir ./linux-$GIT_HASH
+  tar xvf $GIT_HASH -C ./linux-$GIT_HASH --strip-components 1 > /dev/null
+
+  [ -e /usr/local/linux-$GIT_HASH ] && sudo rm -rf /usr/src/linux-$GIT_HASH
+  sudo mv ./linux-$GIT_HASH /usr/src/
+
+  [ -e /lib/modules/`uname -r`/build ] && sudo rm -rf /lib/modules/`uname -r`/build
+  sudo ln -s /usr/src/linux-$GIT_HASH /lib/modules/`uname -r`/build
+else
+  echo "Info:	Already unpacked"
+fi
+
+echo "Info:	Entering /lib/modules/`uname -r`/build"
+cd /lib/modules/`uname -r`/build
+
+grep --silent $PI2_SOC_NAME /proc/cpuinfo
+if [ $? -eq 0 ]
+then
+  echo "Run:	make bcm2709_defconfig"
+  wget --quiet "https://raw.githubusercontent.com/raspberrypi/firmware/$FIRMWARE_REVISION/extra/Module7.symvers"
+  mv Module7.symvers Module.symvers
+  make bcm2709_defconfig
+  sudo sed -i 's/CONFIG_LOCALVERSION=.*$/CONFIG_LOCALVERSION="-v7+"/' ./.config
+fi
+
+echo "Run:	make modules_prepare"
+make modules_prepare
+
+echo "Info:	Successfully done."
