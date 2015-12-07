@@ -24,12 +24,12 @@ echo "Info:	REVISION=$FIRMWARE_REVISION"
 echo "Info:	GIT_HASH=$GIT_HASH"
 echo "Info:	GIT_REPO=$GIT_REPO"
 
-if [ ! -e $GIT_HASH ]
+if [ -e "$HOME/$GIT_HASH" ]
 then
-  echo "Download: $GIT_REPO"
-  wget --quiet $GIT_REPO
-else
   echo "Info:	Already downloaded"
+else
+  echo "Info:	Downloading $GIT_REPO"
+  wget --quiet $GIT_REPO
 fi
 
 if [ ! -e /usr/src/linux-$GIT_HASH ]
