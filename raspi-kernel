@@ -8,6 +8,15 @@
 
 set -e
 
+isRPI=`uname -a | grep raspberrypi | cat`
+
+if [ "$isRPI" == "" ]
+then
+  echo "Info:	raspi-kernel is the kernel source installer for Raspberry Pi."
+  echo "Info:	Please run this script on your Raspberry Pi."
+  exit 1
+fi
+
 FIRMWARE_REVISION=`\
   zcat /usr/share/doc/raspberrypi-bootloader/changelog.Debian.gz |\
   grep "  \* firmware as of" |\
