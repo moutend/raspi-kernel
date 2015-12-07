@@ -32,21 +32,21 @@ else
   wget --quiet $GIT_REPO
 fi
 
-if [ ! -e /usr/src/linux-$GIT_HASH ]
+if [ -e /usr/src/linux-$GIT_HASH ]
 then
-  echo "Unpack:	$GIT_HASH"
+  echo "Info:	Already unpacked"
+else
+  echo "Info:	Unpacking $HOME/$GIT_HASH"
 
-  [ ! -e ./linux-$GIT_HAS ] && rm -rf ./linux-$GIT_HASH
-  mkdir ./linux-$GIT_HASH
-  tar xvf $GIT_HASH -C ./linux-$GIT_HASH --strip-components 1 > /dev/null
+  rm -rf $HOME/linux-$GIT_HASH
+  mkdir $HOME/linux-$GIT_HASH
+  tar xvf $HOME/$GIT_HASH -C $HOME/linux-$GIT_HASH --strip-components 1 > /dev/null
 
-  [ -e /usr/local/linux-$GIT_HASH ] && sudo rm -rf /usr/src/linux-$GIT_HASH
+  sudo rm -rf /usr/src/linux-$GIT_HASH
   sudo mv ./linux-$GIT_HASH /usr/src/
 
-  [ -e /lib/modules/`uname -r`/build ] && sudo rm -rf /lib/modules/`uname -r`/build
+  sudo rm -rf /lib/modules/`uname -r`/build
   sudo ln -s /usr/src/linux-$GIT_HASH /lib/modules/`uname -r`/build
-else
-  echo "Info:	Already unpacked"
 fi
 
 echo "Info:	Entering /lib/modules/`uname -r`/build"
