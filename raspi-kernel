@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Name:        raspikernel-
+# Name:        raspi-kernel
 # Description: The bash script for installing kernel source.
 # Author:      moutend <moutend@gmail.com>
 # Repository:  https://github.com/moutend/raspi-kernel.git
