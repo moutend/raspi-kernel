@@ -32,6 +32,12 @@ else
   wget --quiet $GIT_REPO
 fi
 
+if [ ! -e /lib/modules/`uname -r` ]
+then
+    echo "Info:	Mismatching kernel version and a result of \`uname -r\`. Please reboot."
+    exit 0
+fi
+
 if [ -e /usr/src/linux-$GIT_HASH ]
 then
   echo "Info:	Already unpacked"
